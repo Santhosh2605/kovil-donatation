@@ -13,6 +13,6 @@ window.VG_CONFIG = {
      Leave '' to use the local data-folder mode instead.
      NOTE: the GitHub TOKEN is NOT stored here — you type it on the
      admin page at runtime (kept only in your browser session).   */
-  GITHUB_REPO: '',
+  GITHUB_REPO: 'Santhosh2605/kovil-donatation',
   GITHUB_BRANCH: 'main'
 };
