@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>நிர்வாகம் – நன்கொடை பட்டியல் | ஸ்ரீ சித்தி விநாயகர் ஆலயம்</title>
+<title>நிர்வாகம் – நன்கொடை & செலவு பட்டியல் | ஸ்ரீ சித்தி விநாயகர் ஆலயம்</title>
 <link rel="stylesheet" href="vendor/bootstrap.min.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -16,7 +16,7 @@
 
 <div class="container py-4 admin-container">
   <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
-    <h2 class="admin-title m-0">🛕 நிர்வாகம் – நன்கொடை பட்டியல்</h2>
+    <h2 class="admin-title m-0">🛕 நிர்வாகம் – நன்கொடை & செலவு பட்டியல்</h2>
     <div class="d-flex gap-2">
       <a href="index.html" class="btn btn-outline-success btn-sm">முதல் பக்கம்</a>
       <button id="logoutBtn" class="btn btn-outline-danger btn-sm d-none">வெளியேறு</button>
@@ -36,7 +36,7 @@
             <input id="loginPass" type="password" class="form-control mb-3" autocomplete="current-password" required>
             <button class="btn btn-fest w-100" type="submit">உள்நுழை</button>
             <div id="loginError" class="text-danger mt-2 small d-none">தவறான பயனர்பெயர் / கடவுச்சொல்</div>
-           <!-- <div class="hint mt-3 small text-center">Demo login: <b>admin</b> / <b>admin123</b></div> -->
+            <div class="hint mt-3 small text-center">Demo login: <b>admin</b> / <b>admin123</b></div>
           </form>
         </div>
       </div>
@@ -45,22 +45,6 @@
 
   <!-- ===== Dashboard view ===== -->
   <section id="dashView" class="d-none">
-    <div class="card festive-card mb-4">
-      <div class="card-body p-3 p-md-4">
-        <h5 class="mb-3 admin-sub">➕ புதிய நன்கொடை சேர்க்க</h5>
-        <form id="addForm" class="row g-2">
-          <div class="col-12 col-md-5">
-            <input id="addName" class="form-control" placeholder="கொடுத்தவர் பெயர்" required maxlength="60">
-          </div>
-          <div class="col-6 col-md-3">
-            <input id="addAmount" type="number" min="1" step="1" class="form-control" placeholder="தொகை (₹)" required>
-          </div>
-          <div class="col-6 col-md-4">
-            <button class="btn btn-fest w-100" type="submit">சேர்</button>
-          </div>
-        </form>
-      </div>
-    </div>
 
     <div class="card festive-card mb-4 d-none" id="ghPanel">
       <div class="card-body p-3">
@@ -80,6 +64,33 @@
       </div>
     </div>
 
+    <!-- Add donor -->
+    <div class="card festive-card mb-3">
+      <div class="card-body p-3 p-md-4">
+        <h5 class="mb-3 admin-sub">➕ புதிய நன்கொடை சேர்க்க</h5>
+        <form id="addForm" class="row g-2">
+          <div class="col-12 col-md-5"><input id="addName" class="form-control" placeholder="கொடுத்தவர் பெயர்" required maxlength="60"></div>
+          <div class="col-6 col-md-3"><input id="addAmount" type="number" min="1" step="1" class="form-control" placeholder="தொகை (₹)" required></div>
+          <div class="col-6 col-md-4"><button class="btn btn-fest w-100" type="submit">சேர்</button></div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Add expense -->
+    <div class="card festive-card mb-4">
+      <div class="card-body p-3 p-md-4">
+        <h5 class="mb-3 admin-sub">➖ புதிய செலவு சேர்க்க</h5>
+        <form id="addExpForm" class="row g-2">
+          <div class="col-6 col-md-3"><input id="addExpDate" type="date" class="form-control" required></div>
+          <div class="col-12 col-md-5"><input id="addExpDesc" class="form-control" placeholder="விவரம் (எ.கா. பந்தல், பூக்கள்)" required maxlength="80"></div>
+          <div class="col-6 col-md-2"><input id="addExpAmount" type="number" min="1" step="1" class="form-control" placeholder="தொகை (₹)" required></div>
+          <div class="col-12 col-md-2"><button class="btn btn-fest w-100" type="submit">சேர்</button></div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Donors table -->
+    <h5 class="admin-sub mb-2">நன்கொடை பட்டியல்</h5>
     <div class="donor-card">
       <div class="table-responsive">
         <table class="table donor-table mb-0 align-middle">
@@ -98,26 +109,45 @@
       </div>
     </div>
 
+    <!-- Expenses table -->
+    <h5 class="admin-sub mb-2 mt-4">செலவு பட்டியல்</h5>
+    <div class="donor-card">
+      <div class="table-responsive">
+        <table class="table donor-table mb-0 align-middle">
+          <thead>
+            <tr>
+              <th class="col-serial">வரிசை எண்</th>
+              <th class="col-date">தேதி</th>
+              <th>விவரம்</th>
+              <th class="col-amt">தொகை (₹)</th>
+              <th class="col-act text-end">செயல்கள்</th>
+            </tr>
+          </thead>
+          <tbody id="adminExpRows">
+            <tr><td colspan="5" class="loading">தரவு ஏற்றப்படுகிறது…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
     <div class="d-flex flex-wrap justify-content-between align-items-center mt-3 gap-2">
-      <p class="m-0 total-inline">மொத்தம்: ₹ <span id="adminTotal">0</span></p>
+      <p class="m-0 total-inline">மொத்தம்: நன்கொடை ₹ <span id="adminTotal">0</span> · செலவு ₹ <span id="adminExpTotal">0</span> · இருப்பு ₹ <span id="adminBalance">0</span></p>
       <div class="d-flex gap-2 flex-wrap">
-        <button id="linkExcelBtn" class="btn btn-outline-success btn-sm">📁 data folder இணை</button>
-        <button id="downloadExcelBtn" class="btn btn-success btn-sm">⬇ Excel பதிவிறக்கு</button>
+        <button id="downloadDonorsBtn" class="btn btn-success btn-sm">⬇ நன்கொடை Excel</button>
+        <button id="downloadExpensesBtn" class="btn btn-outline-success btn-sm">⬇ செலவு Excel</button>
+        <button id="linkExcelBtn" class="btn btn-outline-primary btn-sm">📁 data folder இணை</button>
       </div>
     </div>
     <p id="excelStatus" class="excel-status text-secondary small mt-2 mb-0"></p>
   </section>
 </div>
 
-<!-- ===== Edit modal ===== -->
+<!-- ===== Edit donor modal ===== -->
 <div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content festive-card">
       <form id="editForm">
-        <div class="modal-header">
-          <h5 class="modal-title admin-sub">✏️ நன்கொடை திருத்து</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="மூடு"></button>
-        </div>
+        <div class="modal-header"><h5 class="modal-title admin-sub">✏️ நன்கொடை திருத்து</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="மூடு"></button></div>
         <div class="modal-body">
           <input type="hidden" id="editSerial">
           <label class="form-label" for="editName">கொடுத்தவர் பெயர்</label>
@@ -134,18 +164,40 @@
   </div>
 </div>
 
+<!-- ===== Edit expense modal ===== -->
+<div class="modal fade" id="editExpModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content festive-card">
+      <form id="editExpForm">
+        <div class="modal-header"><h5 class="modal-title admin-sub">✏️ செலவு திருத்து</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="மூடு"></button></div>
+        <div class="modal-body">
+          <input type="hidden" id="editExpSerial">
+          <label class="form-label" for="editExpDate">தேதி</label>
+          <input id="editExpDate" type="date" class="form-control mb-3" required>
+          <label class="form-label" for="editExpDesc">விவரம்</label>
+          <input id="editExpDesc" class="form-control mb-3" required maxlength="80">
+          <label class="form-label" for="editExpAmount">தொகை (₹)</label>
+          <input id="editExpAmount" type="number" min="1" step="1" class="form-control" required>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ரத்து</button>
+          <button class="btn btn-fest" type="submit">சேமி</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
 <!-- ===== Delete modal ===== -->
 <div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content festive-card">
       <form id="deleteForm">
-        <div class="modal-header">
-          <h5 class="modal-title admin-sub">🗑️ நன்கொடை நீக்கு</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="மூடு"></button>
-        </div>
+        <div class="modal-header"><h5 class="modal-title admin-sub">🗑️ நீக்கு</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="மூடு"></button></div>
         <div class="modal-body">
           <input type="hidden" id="deleteSerial">
-          <p class="mb-0"><b id="deleteName"></b> என்ற நன்கொடையை நீக்க விரும்புகிறீர்களா?</p>
+          <input type="hidden" id="deleteKind" value="donor">
+          <p class="mb-0"><b id="deleteName"></b> ஐ நீக்க விரும்புகிறீர்களா?</p>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ரத்து</button>

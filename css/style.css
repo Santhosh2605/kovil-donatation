@@ -268,3 +268,53 @@ td.donor-name { font-size: 1.06rem; }
   .thanks { margin: 1.2rem 0 .8rem; }
   .footer { margin-top: 1.6rem; }
 }
+
+/* ---------- Expenses section (home) ---------- */
+.expenses-section { padding-top: .4rem; }
+.section-title {
+  color: var(--maroon);
+  font-weight: 800;
+  font-size: clamp(1.2rem, 4vw, 1.7rem);
+  text-align: center;
+  margin: 0 0 .9rem;
+  padding-bottom: .35rem;
+  border-bottom: 3px solid var(--gold);
+  display: inline-block;
+  width: auto;
+  position: relative;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.col-date { width: 130px; }
+.dual-banner {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin: 1.6rem auto 0;
+}
+.mini-banner {
+  flex: 1 1 240px;
+  max-width: 340px;
+  border-radius: 14px;
+  border: 3px solid var(--gold);
+  padding: .8rem 1rem .9rem;
+  color: #fff;
+  text-align: center;
+  box-shadow: 0 10px 22px rgba(0,0,0,.2);
+}
+.mini-banner.maroon { background: linear-gradient(180deg, #a32437, var(--maroon-dk)); }
+.mini-banner.green  { background: linear-gradient(180deg, var(--green-lite), var(--green-dark)); }
+.mini-label { margin: 0 0 .1rem; font-weight: 700; font-size: clamp(.9rem, 2.6vw, 1.1rem); }
+.mini-amount {
+  margin: 0;
+  color: #ffd93b;
+  font-weight: 800;
+  font-size: clamp(1.6rem, 5vw, 2.3rem);
+  font-family: 'Baloo Thambi 2', sans-serif;
+  text-shadow: 0 2px 0 rgba(0,0,0,.35);
+}
+@media (max-width: 575.98px) {
+  .dual-banner { margin-top: 1.2rem; }
+  .col-date { width: 100px; }
+}

@@ -1,10 +1,6 @@
-/* Admin context: login + add / update / delete donors.
-   Two storage modes (chosen by js/config.js → GITHUB_REPO):
-   - GitHub mode : data/donors.xlsx lives in the GitHub project;
-     first-time upload from PC, then one commit per change.
-   - Local mode  : data folder on this computer (File System Access).
-   Donor data is never kept in browser storage; only the login flag
-   and (GitHub mode) the runtime token live in sessionStorage.      */
+/* Admin context: login + add / update / delete for DONORS and EXPENSES.
+   Both lists live in ONE workbook (sheets Donors + Expenses, totals
+   included) at data/donors.xlsx — local folder mode or GitHub mode. */
 (function () {
   'use strict';
 
@@ -21,7 +17,7 @@
     });
   }
 
-  var list = [];
+  var state = { donors: [], expenses: [] };
   var ghToken = null;
   try { ghToken = sessionStorage.getItem(TOKEN_KEY); } catch (e) {}
   var ghSha = null;
@@ -41,16 +37,16 @@
   function setStatus(kind) {
     var el = $('excelStatus');
     if (kind === 'linked') {
-      el.textContent = '✅ இணைக்கப்பட்டது: ' + (VGStore.folderName() || 'data') + '/donors.xlsx — ஒவ்வொரு மாற்றமும் இந்த ஒரே கோப்பில் எழுதப்படும்.';
+      el.textContent = '✅ இணைக்கப்பட்டது: ' + (VGStore.folderName() || 'data') + '/donors.xlsx — நன்கொடை + செலவு இரு தாள்களும் இந்த ஒரே கோப்பில் எழுதப்படும் (மொத்தமும் கோப்பில் சேரும்).';
       el.className = 'excel-status text-success small mt-2 mb-0';
     } else if (kind === 'locked') {
       el.textContent = '⚠️ Excel கோப்பை எழுத முடியவில்லை — donors.xlsx எக்செல்-ல் திறந்திருந்தால் அதை மூடிவிட்டு மீண்டும் முயற்சிக்கவும்.';
       el.className = 'excel-status text-danger small mt-2 mb-0';
     } else if (kind === 'unsupported') {
-      el.textContent = '⚠️ இந்த உலாவி நேரடி Excel எழுத்தை ஆதரிக்கவில்லை (Chrome/Edge பயன்படுத்தவும்). மாற்றங்களை ⬇ பதிவிறக்கு மூலம் data/donors.xlsx ஆகச் சேமிக்கவும்.';
+      el.textContent = '⚠️ இந்த உலாவி நேரடி Excel எழுத்தை ஆதரிக்கவில்லை (Chrome/Edge பயன்படுத்தவும்). ⬇ பதிவிறக்கு பொத்தான்களைப் பயன்படுத்தவும்.';
       el.className = 'excel-status text-danger small mt-2 mb-0';
     } else {
-      el.textContent = '📁 உங்கள் project இன் DATA FOLDER ஐ ஒரு முறை இணைக்கவும் — அதன் பிறகு donors.xlsx அங்கேயே தானாக உருவாக்கப்பட்டு, எல்லா தரவும் அதில் மட்டுமே சேமிக்கப்படும்.';
+      el.textContent = '📁 உங்கள் project இன் DATA FOLDER ஐ ஒரு முறை இணைக்கவும் — donors.xlsx அங்கேயே தானாக உருவாக்கப்பட்டு, எல்லா தரவும் அதில் மட்டுமே சேமிக்கப்படும்.';
       el.className = 'excel-status text-secondary small mt-2 mb-0';
     }
   }
@@ -73,7 +69,6 @@
     $('logoutBtn').classList.remove('d-none');
   }
 
-  /* ---------- login / logout ---------- */
   $('loginForm').addEventListener('submit', function (e) {
     e.preventDefault();
     var u = $('loginUser').value.trim();
@@ -96,9 +91,8 @@
   function ghInit() {
     $('ghPanel').classList.remove('d-none');
     $('linkExcelBtn').classList.add('d-none');
-    if (ghToken) {
-      ghLoadCurrent();
-    } else {
+    if (ghToken) { ghLoadCurrent(); }
+    else {
       ghStatus('🔑 Fine-grained token உள்ளிட்டு இணைக்கவும் (GitHub → Settings → Developer settings → Tokens → repo: ' + VGStore.ghRepo() + ', Contents: Read and write)', 'text-secondary');
       load();
     }
@@ -118,26 +112,25 @@
   });
 
   function ghLoadCurrent() {
-    VGStore.ghLoad(ghToken, function (l, status, sha) {
+    VGStore.ghLoad(ghToken, function (st, status, sha) {
       if (status === 'github') {
-        ghSha = sha; list = l || []; render();
+        ghSha = sha; state = st || { donors: [], expenses: [] }; render();
         ghStatus('✅ ' + VGStore.ghRepo() + '/data/donors.xlsx — ஒவ்வொரு மாற்றமும் நேரடியாக repo-வில் commit ஆகும்.', 'text-success');
       } else if (status === 'missing') {
-        list = []; render();
+        state = { donors: [], expenses: [] }; render();
         ghStatus('⚠️ Repo-வில் donors.xlsx இல்லை — “⬆ Excel பதிவேற்று” மூலம் முதல் முறை உங்கள் PC-யிலிருந்து பதிவேற்றவும்.', 'text-danger');
       } else if (status === 'unauthorized') {
         ghToken = null;
         try { sessionStorage.removeItem(TOKEN_KEY); } catch (e) {}
-        list = []; render();
+        state = { donors: [], expenses: [] }; render();
         ghStatus('🔑 token தேவை — மீண்டும் இணைக்கவும்.', 'text-secondary');
       } else {
-        list = []; render();
+        state = { donors: [], expenses: [] }; render();
         ghStatus('⚠️ GitHub-லிருந்து படிக்க முடியவில்லை', 'text-danger');
       }
     });
   }
 
-  /* first-time upload: PC → straight into the GitHub project */
   $('ghUpload').addEventListener('change', function () {
     var f = this.files && this.files[0];
     this.value = '';
@@ -150,7 +143,7 @@
           toast('GitHub repo-வில் donors.xlsx பதிவேற்றப்பட்டது ✅');
           ghLoadCurrent();
         } else {
-          ghStatus('⚠️ பதிவேற்ற முடியவில்லை: ' + shaOrErr, 'text-danger');
+          ghStatus('⚠️ பதிவிறக்க முடியவில்லை: ' + shaOrErr, 'text-danger');
         }
       });
     });
@@ -176,8 +169,8 @@
   function acquire() {
     if (!VGStore.supported()) { setStatus('unsupported'); load(); return; }
     VGStore.restore(true, function (ok) {
-      if (ok) { setStatus('linked'); load(); return; } /* silent auto re-attach */
-      connectOnce(); /* one-time only */
+      if (ok) { setStatus('linked'); load(); return; }
+      connectOnce();
     });
   }
 
@@ -194,39 +187,49 @@
   /* ================= shared list handling ================= */
   function load() {
     if (GH) {
-      if (ghToken) { ghLoadCurrent(); } else { list = []; render(); }
+      if (ghToken) { ghLoadCurrent(); } else { state = { donors: [], expenses: [] }; render(); }
       return;
     }
-    VGStore.load(function (l, status) {
+    VGStore.load(function (st, status) {
       if (status === 'none' || status === 'error') {
         if (!VGStore.linked()) setStatus('unlinked');
-        list = [];
+        state = { donors: [], expenses: [] };
       } else {
-        list = l || [];
+        state = st || { donors: [], expenses: [] };
       }
       render();
     });
   }
 
+  function actionButtons(kind, serial, label) {
+    return '<td class="text-end" style="white-space:nowrap">' +
+      '<button class="btn btn-sm btn-outline-primary action-btn" data-act="edit" data-kind="' + kind + '" data-serial="' + serial + '" data-name="' + esc(label) + '" title="திருத்து">✏️</button> ' +
+      '<button class="btn btn-sm btn-outline-danger action-btn" data-act="del" data-kind="' + kind + '" data-serial="' + serial + '" data-name="' + esc(label) + '" title="நீக்கு">🗑️</button>' +
+    '</td>';
+  }
+
   function render() {
-    var tbody = $('adminRows');
-    if (!list.length) {
-      tbody.innerHTML = '<tr><td colspan="4" class="loading">பட்டியல் காலியாக உள்ளது</td></tr>';
-    } else {
-      tbody.innerHTML = list.map(function (d, i) {
-        return '<tr>' +
-          '<td class="col-serial">' + (i + 1) + '</td>' +
-          '<td class="donor-name">' + esc(d.name) + '</td>' +
-          '<td class="col-amt">' + fmt(d.amount) + '</td>' +
-          '<td class="text-end" style="white-space:nowrap">' +
-            '<button class="btn btn-sm btn-outline-primary action-btn" data-act="edit" data-serial="' + (i + 1) + '" data-name="' + esc(d.name) + '" data-amount="' + d.amount + '" title="திருத்து">✏️</button> ' +
-            '<button class="btn btn-sm btn-outline-danger action-btn" data-act="del" data-serial="' + (i + 1) + '" data-name="' + esc(d.name) + '" title="நீக்கு">🗑️</button>' +
-          '</td>' +
-        '</tr>';
-      }).join('');
-    }
-    var total = list.reduce(function (s, d) { return s + (Number(d.amount) || 0); }, 0);
-    $('adminTotal').textContent = fmt(total);
+    var d = state.donors, x = state.expenses;
+
+    $('adminRows').innerHTML = d.length ? d.map(function (r, i) {
+      return '<tr><td class="col-serial">' + (i + 1) + '</td>' +
+        '<td class="donor-name">' + esc(r.name) + '</td>' +
+        '<td class="col-amt">' + fmt(r.amount) + '</td>' +
+        actionButtons('donor', i + 1, r.name) + '</tr>';
+    }).join('') : '<tr><td colspan="4" class="loading">பட்டியல் காலியாக உள்ளது</td></tr>';
+
+    $('adminExpRows').innerHTML = x.length ? x.map(function (r, i) {
+      return '<tr><td class="col-serial">' + (i + 1) + '</td>' +
+        '<td>' + esc(r.date) + '</td>' +
+        '<td class="donor-name">' + esc(r.desc) + '</td>' +
+        '<td class="col-amt">' + fmt(r.amount) + '</td>' +
+        actionButtons('expense', i + 1, r.desc) + '</tr>';
+    }).join('') : '<tr><td colspan="5" class="loading">செலவுகள் இல்லை</td></tr>';
+
+    var dt = VGStore.sum(d), et = VGStore.sum(x);
+    $('adminTotal').textContent = fmt(dt);
+    $('adminExpTotal').textContent = fmt(et);
+    $('adminBalance').textContent = fmt(dt - et);
   }
 
   function persist(msg) {
@@ -237,17 +240,16 @@
         toast('GitHub token தேவை', false);
         return;
       }
-      VGStore.ghSave(ghToken, list, ghSha, function (ok, shaOrErr) {
+      VGStore.ghSave(ghToken, state, ghSha, function (ok, shaOrErr) {
         if (ok) {
           ghSha = shaOrErr;
           ghStatus('✅ commit ஆனது: ' + VGStore.ghRepo() + '/data/donors.xlsx', 'text-success');
           toast(msg + ' (GitHub ✅)');
         } else if (String(shaOrErr).indexOf('http 409') === 0) {
-          /* someone else committed — refresh sha and retry once */
-          VGStore.ghLoad(ghToken, function (l, st, sha) {
-            if (st === 'github') {
+          VGStore.ghLoad(ghToken, function (st, stt, sha) {
+            if (stt === 'github') {
               ghSha = sha;
-              VGStore.ghSave(ghToken, list, ghSha, function (ok2, err2) {
+              VGStore.ghSave(ghToken, state, ghSha, function (ok2, err2) {
                 if (ok2) { ghSha = err2; toast(msg + ' (GitHub ✅)'); }
                 else { ghStatus('⚠️ ' + err2, 'text-danger'); toast('சேமிக்க முடியவில்லை', false); }
               });
@@ -265,43 +267,73 @@
       });
       return;
     }
-    VGStore.save(list, function (ok, err) {
+    VGStore.save(state, function (ok, err) {
       if (ok) { setStatus('linked'); toast(msg + ' (Excel ✅)'); }
       else if (err === 'locked') { setStatus('locked'); toast('Excel-ல் சேமிக்க முடியவில்லை — கோப்பை மூடிவிட்டு மீண்டும் முயற்சிக்கவும்', false); }
       else { setStatus('unsupported'); toast('இணைக்கப்படவில்லை — ⬇ பதிவிறக்கு பயன்படுத்தவும்', false); }
     });
   }
 
-  /* ---------- add ---------- */
+  /* ---------- add donor ---------- */
   $('addForm').addEventListener('submit', function (e) {
     e.preventDefault();
     var name = $('addName').value.trim();
     var amount = Math.round(Number($('addAmount').value));
     if (!name) { toast('பெயர் தேவை', false); return; }
     if (!isFinite(amount) || amount <= 0) { toast('சரியான தொகையை உள்ளிடவும்', false); return; }
-    list.push({ name: name, amount: amount });
+    state.donors.push({ name: name, amount: amount });
     $('addForm').reset();
     persist('நன்கொடை சேர்க்கப்பட்டது');
   });
 
-  /* ---------- edit / delete via modals ---------- */
-  function editModal()   { return bootstrap.Modal.getOrCreateInstance($('editModal')); }
-  function deleteModal() { return bootstrap.Modal.getOrCreateInstance($('deleteModal')); }
+  /* ---------- add expense ---------- */
+  $('addExpForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var date = $('addExpDate').value;
+    var desc = $('addExpDesc').value.trim();
+    var amount = Math.round(Number($('addExpAmount').value));
+    if (!date) { toast('தேதி தேவை', false); return; }
+    if (!desc) { toast('விவரம் தேவை', false); return; }
+    if (!isFinite(amount) || amount <= 0) { toast('சரியான தொகையை உள்ளிடவும்', false); return; }
+    state.expenses.push({ date: date, desc: desc, amount: amount });
+    $('addExpForm').reset();
+    persist('செலவு சேர்க்கப்பட்டது');
+  });
 
-  $('adminRows').addEventListener('click', function (e) {
+  /* ---------- row actions (both tables) ---------- */
+  function editModal()     { return bootstrap.Modal.getOrCreateInstance($('editModal')); }
+  function editExpModal()  { return bootstrap.Modal.getOrCreateInstance($('editExpModal')); }
+  function deleteModal()   { return bootstrap.Modal.getOrCreateInstance($('deleteModal')); }
+
+  function onRowClick(e) {
     var btn = e.target.closest('button[data-act]');
     if (!btn) return;
+    var kind = btn.getAttribute('data-kind');
+    var serial = Number(btn.getAttribute('data-serial'));
+    var item = (kind === 'donor' ? state.donors : state.expenses)[serial - 1];
+    if (!item) return;
     if (btn.getAttribute('data-act') === 'edit') {
-      $('editSerial').value = btn.getAttribute('data-serial');
-      $('editName').value   = btn.getAttribute('data-name');
-      $('editAmount').value = btn.getAttribute('data-amount');
-      editModal().show();
+      if (kind === 'donor') {
+        $('editSerial').value = serial;
+        $('editName').value = item.name;
+        $('editAmount').value = item.amount;
+        editModal().show();
+      } else {
+        $('editExpSerial').value = serial;
+        $('editExpDate').value = item.date;
+        $('editExpDesc').value = item.desc;
+        $('editExpAmount').value = item.amount;
+        editExpModal().show();
+      }
     } else {
-      $('deleteSerial').value = btn.getAttribute('data-serial');
-      $('deleteName').textContent = btn.getAttribute('data-name');
+      $('deleteSerial').value = serial;
+      $('deleteKind').value = kind;
+      $('deleteName').textContent = kind === 'donor' ? item.name : item.desc;
       deleteModal().show();
     }
-  });
+  }
+  $('adminRows').addEventListener('click', onRowClick);
+  $('adminExpRows').addEventListener('click', onRowClick);
 
   $('editForm').addEventListener('submit', function (e) {
     e.preventDefault();
@@ -309,28 +341,49 @@
     var name = $('editName').value.trim();
     var amount = Math.round(Number($('editAmount').value));
     if (!name || !isFinite(amount) || amount <= 0) { toast('சரியான தரவை உள்ளிடவும்', false); return; }
-    if (serial >= 1 && serial <= list.length) {
-      list[serial - 1] = { name: name, amount: amount };
+    if (serial >= 1 && serial <= state.donors.length) {
+      state.donors[serial - 1] = { name: name, amount: amount };
       editModal().hide();
       persist('மாற்றம் சேமிக்கப்பட்டது');
+    }
+  });
+
+  $('editExpForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var serial = Number($('editExpSerial').value);
+    var date = $('editExpDate').value;
+    var desc = $('editExpDesc').value.trim();
+    var amount = Math.round(Number($('editExpAmount').value));
+    if (!date || !desc || !isFinite(amount) || amount <= 0) { toast('சரியான தரவை உள்ளிடவும்', false); return; }
+    if (serial >= 1 && serial <= state.expenses.length) {
+      state.expenses[serial - 1] = { date: date, desc: desc, amount: amount };
+      editExpModal().hide();
+      persist('செலவு மாற்றம் சேமிக்கப்பட்டது');
     }
   });
 
   $('deleteForm').addEventListener('submit', function (e) {
     e.preventDefault();
     var serial = Number($('deleteSerial').value);
-    if (serial >= 1 && serial <= list.length) {
-      list.splice(serial - 1, 1);
+    var kind = $('deleteKind').value;
+    var arr = kind === 'donor' ? state.donors : state.expenses;
+    if (serial >= 1 && serial <= arr.length) {
+      arr.splice(serial - 1, 1);
       deleteModal().hide();
-      persist('நன்கொடை நீக்கப்பட்டது');
+      persist(kind === 'donor' ? 'நன்கொடை நீக்கப்பட்டது' : 'செலவு நீக்கப்பட்டது');
     }
   });
 
-  /* ---------- manual backup download ---------- */
-  $('downloadExcelBtn').addEventListener('click', function () {
-    if (!list.length) { toast('பட்டியல் காலியாக உள்ளது', false); return; }
-    VGStore.download(list);
-    toast('donors.xlsx பதிவிறக்கப்பட்டது ⬇');
+  /* ---------- separate downloads ---------- */
+  $('downloadDonorsBtn').addEventListener('click', function () {
+    if (!state.donors.length) { toast('நன்கொடை பட்டியல் காலியாக உள்ளது', false); return; }
+    VGStore.downloadBytes(VGStore.donorsBytes(state.donors), 'donors.xlsx');
+    toast('நன்கொடை Excel பதிவிறக்கப்பட்டது ⬇');
+  });
+  $('downloadExpensesBtn').addEventListener('click', function () {
+    if (!state.expenses.length) { toast('செலவு பட்டியல் காலியாக உள்ளது', false); return; }
+    VGStore.downloadBytes(VGStore.expensesBytes(state.expenses), 'expenses.xlsx');
+    toast('செலவு Excel பதிவிறக்கப்பட்டது ⬇');
   });
 
   /* ---------- boot ---------- */

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>விநாயகர் சதுர்த்தி – நன்கொடை பட்டியல் | ஸ்ரீ சித்தி விநாயகர் ஆலயம்</title>
+<title>விநாயகர் சதுர்த்தி – நன்கொடை & செலவு பட்டியல் | ஸ்ரீ சித்தி விநாயகர் ஆலயம்</title>
 <link rel="stylesheet" href="vendor/bootstrap.min.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -29,29 +29,65 @@
   </div>
 </header>
 
-<main class="container table-wrap">
-  <div class="donor-card">
-    <div class="table-responsive">
-      <table class="table donor-table mb-0 align-middle">
-        <thead>
-          <tr>
-            <th class="col-serial">வரிசை எண்</th>
-            <th>கொடுத்தவர் பெயர்</th>
-            <th class="col-amt">அமௌன்ட் (₹)</th>
-          </tr>
-        </thead>
-        <tbody id="donorRows">
-          <tr><td colspan="3" class="loading">தரவு ஏற்றப்படுகிறது…</td></tr>
-        </tbody>
-      </table>
+<main>
+  <!-- ===== Donors ===== -->
+  <section class="container table-wrap">
+    <div class="donor-card">
+      <div class="table-responsive">
+        <table class="table donor-table mb-0 align-middle">
+          <thead>
+            <tr>
+              <th class="col-serial">வரிசை எண்</th>
+              <th>கொடுத்தவர் பெயர்</th>
+              <th class="col-amt">அமௌன்ட் (₹)</th>
+            </tr>
+          </thead>
+          <tbody id="donorRows">
+            <tr><td colspan="3" class="loading">தரவு ஏற்றப்படுகிறது…</td></tr>
+          </tbody>
+        </table>
+      </div>
     </div>
-  </div>
 
-  <section class="total-banner text-center">
-    <span class="corner deco-left" aria-hidden="true">🪔</span>
-    <span class="corner deco-right" aria-hidden="true">🪔</span>
-    <p class="total-label">இதுவரை மொத்த நன்கொடை தொகை</p>
-    <p class="total-amount">₹ <span id="grandTotal">0</span></p>
+    <section class="total-banner text-center">
+      <span class="corner deco-left" aria-hidden="true">🪔</span>
+      <span class="corner deco-right" aria-hidden="true">🪔</span>
+      <p class="total-label">இதுவரை மொத்த நன்கொடை தொகை</p>
+      <p class="total-amount">₹ <span id="grandTotal">0</span></p>
+    </section>
+  </section>
+
+  <!-- ===== Expenses ===== -->
+  <section class="container table-wrap expenses-section">
+    <h2 class="section-title"> செலவு விவரம்</h2>
+    <div class="donor-card">
+      <div class="table-responsive">
+        <table class="table donor-table mb-0 align-middle">
+          <thead>
+            <tr>
+              <th class="col-serial">வரிசை எண்</th>
+              <th class="col-date">தேதி</th>
+              <th>விவரம்</th>
+              <th class="col-amt">தொகை (₹)</th>
+            </tr>
+          </thead>
+          <tbody id="expenseRows">
+            <tr><td colspan="4" class="loading">தரவு ஏற்றப்படுகிறது…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="dual-banner">
+      <div class="mini-banner maroon">
+        <p class="mini-label">மொத்த செலவு</p>
+        <p class="mini-amount">₹ <span id="expenseTotal">0</span></p>
+      </div>
+      <div class="mini-banner green">
+        <p class="mini-label">இருப்பு (நன்கொடை − செலவு)</p>
+        <p class="mini-amount">₹ <span id="balance">0</span></p>
+      </div>
+    </div>
   </section>
 
   <p class="thanks">நன்கொடை வழங்கிய அனைவருக்கும்<br><strong>மனமார்ந்த நன்றி!</strong></p>
